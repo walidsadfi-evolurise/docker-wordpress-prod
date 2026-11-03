@@ -1,0 +1,16 @@
+{
+	email {$ACME_EMAIL}
+	admin 0.0.0.0:2019
+}
+
+{$SITE_HOST} {
+	encode zstd gzip
+	reverse_proxy nginx:80 {
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Real-IP {remote_host}
+	}
+	log {
+		output stdout
+		format json
+	}
+}

@@ -1,0 +1,12 @@
+# CI / local override: no TLS edge, nginx published on 8080, no backup cron.
+services:
+  caddy:
+    deploy:
+      replicas: 0
+  nginx:
+    ports:
+      - "8080:80"
+    networks: [edge, app]
+  backup:
+    deploy:
+      replicas: 0
