@@ -1,4 +1,4 @@
-FROM alpine:3.20
+FROM alpine:3.24
 RUN apk add --no-cache mariadb-client aws-cli gnupg tar gzip dcron tzdata
 COPY backup.sh /usr/local/bin/backup.sh
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
