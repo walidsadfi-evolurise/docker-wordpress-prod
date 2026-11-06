@@ -200,6 +200,9 @@ services:
     image: wordpress:cli-2-php8.3
     profiles: [tools]
     user: "33:33"
+    # The image's entrypoint execs its arguments as-is, so prefix `wp`:
+    # `docker compose run --rm wp core install …` then works as expected.
+    entrypoint: ["docker-entrypoint.sh", "wp"]
     environment:
       WORDPRESS_DB_HOST: db
       WORDPRESS_DB_NAME: ${DB_NAME:-wordpress}
