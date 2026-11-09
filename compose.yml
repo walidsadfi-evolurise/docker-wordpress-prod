@@ -214,7 +214,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    networks: [app, data]
+    # edge too: wp-cli must reach wordpress.org to install plugins (app and data are internal).
+    networks: [edge, app, data]
 
 secrets:
   db_password:
