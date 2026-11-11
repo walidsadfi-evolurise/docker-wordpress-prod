@@ -1,4 +1,5 @@
-ARG WORDPRESS_TAG=6-php8.3-fpm-alpine
+# Pin a major in .env (WORDPRESS_TAG=7-php8.3-fpm-alpine) for production; latest by default.
+ARG WORDPRESS_TAG=php8.3-fpm-alpine
 FROM wordpress:${WORDPRESS_TAG}
 
 # Redis object cache needs the phpredis extension; opcache is already enabled.
