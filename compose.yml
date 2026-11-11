@@ -9,6 +9,24 @@ x-logging: &logging
 x-restart: &restart
   restart: unless-stopped
 
+# wp-config defines. The official image evaluates WORDPRESS_CONFIG_EXTRA from the *environment of the
+# running process*, so every container that boots WordPress (php-fpm, cron, wp-cli) needs the same block,
+# or the object cache silently falls back to 127.0.0.1 and WP_HOME to the request host.
+x-wp-config: &wp_config_extra |
+  define('WP_REDIS_HOST', 'redis');
+  define('WP_REDIS_PORT', 6379);
+  define('WP_REDIS_PREFIX', '${COMPOSE_PROJECT_NAME:-wp}:');
+  define('WP_CACHE', true);
+  define('WP_HOME', 'https://${SITE_HOST}');
+  define('WP_SITEURL', 'https://${SITE_HOST}');
+  define('FORCE_SSL_ADMIN', true);
+  define('DISALLOW_FILE_EDIT', true);
+  define('WP_AUTO_UPDATE_CORE', 'minor');
+  define('WP_MEMORY_LIMIT', '256M');
+  define('WP_MAX_MEMORY_LIMIT', '512M');
+  define('DISABLE_WP_CRON', true);
+  if (isset($$_SERVER['HTTP_X_FORWARDED_PROTO']) && $$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') { $$_SERVER['HTTPS'] = 'on'; }
+
 services:
   # ---------------------------------------------------------------- edge ---
   # Caddy terminates TLS (Let's Encrypt, automatic renewal) and proxies to
@@ -75,20 +93,7 @@ services:
       WORDPRESS_DB_USER: ${DB_USER:-wordpress}
       WORDPRESS_DB_PASSWORD_FILE: /run/secrets/db_password
       WORDPRESS_TABLE_PREFIX: ${DB_PREFIX:-wp_}
-      WORDPRESS_CONFIG_EXTRA: |
-        define('WP_REDIS_HOST', 'redis');
-        define('WP_REDIS_PORT', 6379);
-        define('WP_REDIS_PREFIX', '${COMPOSE_PROJECT_NAME:-wp}:');
-        define('WP_CACHE', true);
-        define('WP_HOME', 'https://${SITE_HOST}');
-        define('WP_SITEURL', 'https://${SITE_HOST}');
-        define('FORCE_SSL_ADMIN', true);
-        define('DISALLOW_FILE_EDIT', true);
-        define('WP_AUTO_UPDATE_CORE', 'minor');
-        define('WP_MEMORY_LIMIT', '256M');
-        define('WP_MAX_MEMORY_LIMIT', '512M');
-        define('DISABLE_WP_CRON', true);
-        if (isset($$_SERVER['HTTP_X_FORWARDED_PROTO']) && $$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') { $$_SERVER['HTTPS'] = 'on'; }
+      WORDPRESS_CONFIG_EXTRA: *wp_config_extra
     secrets: [db_password]
     volumes:
       - wp_data:/var/www/html
@@ -122,6 +127,7 @@ services:
       WORDPRESS_DB_NAME: ${DB_NAME:-wordpress}
       WORDPRESS_DB_USER: ${DB_USER:-wordpress}
       WORDPRESS_DB_PASSWORD_FILE: /run/secrets/db_password
+      WORDPRESS_CONFIG_EXTRA: *wp_config_extra
     secrets: [db_password]
     volumes:
       - wp_data:/var/www/html
@@ -212,6 +218,7 @@ services:
       WORDPRESS_DB_NAME: ${DB_NAME:-wordpress}
       WORDPRESS_DB_USER: ${DB_USER:-wordpress}
       WORDPRESS_DB_PASSWORD_FILE: /run/secrets/db_password
+      WORDPRESS_CONFIG_EXTRA: *wp_config_extra
     secrets: [db_password]
     volumes:
       - wp_data:/var/www/html
