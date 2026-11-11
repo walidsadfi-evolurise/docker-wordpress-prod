@@ -37,6 +37,7 @@ make init                 # creates .env and random secrets
 $EDITOR .env              # SITE_HOST and ACME_EMAIL at least
 make up                   # builds the PHP image, starts everything, waits for health
 make wp ARGS="core install --url=https://shop.example.com --title=Shop --admin_user=admin --admin_email=you@example.com --prompt=admin_password"
+make wp ARGS="rewrite structure '/%postname%/'"   # pretty permalinks: the REST API and the Store API need them
 make wp ARGS="plugin install woocommerce redis-cache --activate"
 make wp ARGS="redis enable"
 ```
