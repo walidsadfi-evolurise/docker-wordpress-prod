@@ -199,7 +199,9 @@ services:
   wp:
     image: wordpress:cli-2-php8.3
     profiles: [tools]
-    user: "33:33"
+    # Alpine images: www-data is uid/gid 82 (not 33 as on Debian). Must match the php
+    # service, which owns /var/www/html, or wp-cli cannot write wp-content.
+    user: "82:82"
     # The image's entrypoint execs its arguments as-is, so prefix `wp`:
     # `docker compose run --rm wp core install …` then works as expected.
     entrypoint: ["docker-entrypoint.sh", "wp"]
