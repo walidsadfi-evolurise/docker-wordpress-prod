@@ -66,7 +66,7 @@ services:
     build:
       context: ./php
       args:
-        WORDPRESS_TAG: ${WORDPRESS_TAG:-6-php8.3-fpm-alpine}
+        WORDPRESS_TAG: ${WORDPRESS_TAG:-php8.3-fpm-alpine}
     <<: [*restart]
     logging: *logging
     environment:
@@ -112,7 +112,7 @@ services:
     build:
       context: ./php
       args:
-        WORDPRESS_TAG: ${WORDPRESS_TAG:-6-php8.3-fpm-alpine}
+        WORDPRESS_TAG: ${WORDPRESS_TAG:-php8.3-fpm-alpine}
     <<: [*restart]
     logging: *logging
     entrypoint: ["/bin/sh", "-c"]
@@ -204,6 +204,8 @@ services:
     # `docker compose run --rm wp core install …` then works as expected.
     entrypoint: ["docker-entrypoint.sh", "wp"]
     environment:
+      HOME: /tmp
+      WP_CLI_CACHE_DIR: /tmp/wp-cli-cache
       WORDPRESS_DB_HOST: db
       WORDPRESS_DB_NAME: ${DB_NAME:-wordpress}
       WORDPRESS_DB_USER: ${DB_USER:-wordpress}
@@ -213,6 +215,9 @@ services:
       - wp_data:/var/www/html
     depends_on:
       db:
+        condition: service_healthy
+      # php copies WordPress into the volume on first start; wait for it or wp-cli races the copy.
+      php:
         condition: service_healthy
     # edge too: wp-cli must reach wordpress.org to install plugins (app and data are internal).
     networks: [edge, app, data]
