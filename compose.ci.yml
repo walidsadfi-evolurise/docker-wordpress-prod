@@ -1,4 +1,16 @@
-# CI / local override: no TLS edge, nginx published on 8080, no backup cron.
+# CI / local override: no TLS edge, nginx published on 8080, no backup cron, plain-http WordPress URLs.
+x-wp-config-ci: &wp_config_ci |
+  define('WP_REDIS_HOST', 'redis');
+  define('WP_REDIS_PORT', 6379);
+  define('WP_REDIS_PREFIX', '${COMPOSE_PROJECT_NAME:-wp}:');
+  define('WP_CACHE', true);
+  define('WP_HOME', 'http://${SITE_HOST}');
+  define('WP_SITEURL', 'http://${SITE_HOST}');
+  define('DISALLOW_FILE_EDIT', true);
+  define('WP_MEMORY_LIMIT', '256M');
+  define('WP_MAX_MEMORY_LIMIT', '512M');
+  define('DISABLE_WP_CRON', true);
+
 services:
   caddy:
     deploy:
@@ -7,6 +19,15 @@ services:
     ports:
       - "8080:80"
     networks: [edge, app]
+  php:
+    environment:
+      WORDPRESS_CONFIG_EXTRA: *wp_config_ci
+  cron:
+    environment:
+      WORDPRESS_CONFIG_EXTRA: *wp_config_ci
+  wp:
+    environment:
+      WORDPRESS_CONFIG_EXTRA: *wp_config_ci
   backup:
     deploy:
       replicas: 0
